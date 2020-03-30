@@ -1,0 +1,189 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\graphicspath{ {./pictures/} }
+
+\usepackage[hoptionsi]{subcaption}
+
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	ASSIGNMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{Dynamic Distributed Decision Making \\Project 2 \\MIE567} % Title of the assignment
+
+\author{\texttt{Hao Tan 999735728}\\ \texttt{Xiali Wu 999011322} \\ \texttt{David Molina 1005615318}} % Author name and email address
+
+\date{University of Toronto --- \today} % University, school and/or department name(s) and a date
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+
+\section{Simulation}
+\textbf{In order to implement model-free reinforcement learning algorithms, we need to first have access to a simulator that can recreate the intended behaviours of the environment (MDP) when interacting with it. To do this, create a file called \textit{Gridworld.py} that implements:}
+\\
+
+% 1---------------------------------------------------------------
+\noindent
+\textbf{1.}
+\noindent
+\textbf{a function that returns the initial state of the MDP: in this case, you
+may assume that the initial state is in the bottom right hand corner of the
+grid.}
+
+\lstset{language=Python}
+\lstset{frame=lines}
+\lstset{caption={Returns a random initial state}}
+\lstset{label={lst:code_direct}}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+def initial_state(self):        # return initial state
+    return grid.states[4, 4]
+\end{lstlisting}
+\\
+
+% 2---------------------------------------------------------------
+\noindent
+\textbf{2.}
+\noindent
+\textbf{a function that, given a current state and action, returns the next state and associated reward of arriving at that state.}
+
+\lstset{language=Python}
+\lstset{frame=lines}
+\lstset{caption={Returns the next state and reward}}
+\lstset{label={lst:code_direct}}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+def transition_reward(self, current_pos, action): # return the transition probability
+    # get next position: state: [0, 0], action: [0, 1], new_state = [0, 1] and reward
+    self.new_pos = np.array(current_pos) + np.array(action)
+    reward = 0 # normally, reward = 0
+    # if new pos results in off the grid, return reward -1
+    if -1 in self.new_pos or self.size in self.new_pos:
+        reward = -1
+    if current_pos == [0, 1]: # if in state A, receive + 10
+        reward = 10
+    if current_pos == [0, 3]: # if in state B, receive + 5
+        reward = 5
+    if -1 in self.new_pos or self.size in self.new_pos: # if crossing the border; 
+        self.new_pos = current_pos # agent's new_pos is the same as the current pos
+    if current_pos == [0, 1]: # if in state A, transition to state A'
+        self.new_pos = [4, 1]
+    if current_pos == [0, 3]: # if in state B, transition to state B'
+        self.new_pos = [2, 3]
+    return self.new_pos, reward
+\end{lstlisting}
+\\
+% IMPLEMENTATION-----------------------------------------------
+\section{Implementation}
+\textbf{Now that you have defined the environment needed to perform
+optimization, you are next asked to implement four of the standard reinforcement
+learning algorithms you have learned in this course so far. This includes:}\\
+
+\\
+\indent\textbf{1. First-Visit On-Policy Monte Carlo for Control}
+\\
+\indent\textbf{2. Q-learning}
+\\
+\indent\textbf{3. SARSA}
+\\
+\indent\textbf{4. SARSA$(\lambda)$ using eligibility traces}
+\\
+
+\noindent
+\textbf{Each algorithm should be implemented in a separate Python file and be
+named appropriately (MonteCarlo.py, QLearning.py, Sarsa.py and SARSALambda.py).
+For each algorithm you implement, you should have another Python file that
+allows to run your experiment.} \\
+
+\noindent
+We initialize our domain, and the algorithm with following parameter settings. We applied the same parameter settings for each of the four algorithms. We fix the episode length to 200 and the total number of episodes to 500.  We initialize your Q-values to zero. Please refer to the algorithm files.
+
+\begin{equation}
+\gamma = 0.99
+\end{equation}
+\begin{equation}
+\lambda = 0.9
+\end{equation}
+\begin{equation}
+\alpha = 0.1
+\end{equation}
+\begin{equation}
+\epsilon \in\{0.01,0.1,0.25\}
+\end{equation}\\
+
+\noindent
+\textbf{In order to get a better idea of how fast each algorithm converges,
+practitioners typically run each algorithm independently using the same initial
+conditions many times (run each one at least 20 times), and average the results
+from all the trials.} \\
+
+\noindent
+\textbf{Plotting the performance of each algorithm and each ε combination, you
+may plot the mean over all trials (you don’t have to plot each individual
+trial).} \\
+
+\noindent
+\textbf{For each experiment, you are responsible for reporting (these can be
+reported as averages of many trials, as mentioned above):} \\
+
+\noindent
+\textbf{• at the end of each episode of training, you should test the
+performance of the greedy policy with respect to your learned Q-values (the
+policy that chooses actions in argmaxQ(s, a)} \\
+
+\noindent
+\textbf{• you must include a plot of both training performance and test
+performance for each experiment: you can measure the performance during an
+episode by the average, total or discounted return you obtained by running that
+policy} \\
+
+\noindent
+\textbf{• you should report the final Q-values you obtained for each experiment
+and the policy you obtained on a typical run: if you obtained different policies
+or performance, report several typical results you observed}
+
+
+% COMPARISON & WRITE_UP-------------------------------
+\newpage
+\section{Comparison and Write-up}
+\textbf{1.For each algorithm, what was the best and worst values of $\epsilon$
+(in terms of test performance)? How different is the train and test performance
+between algorithms for each value of $\epsilon$? How different is the train and
+test performance between values of $\epsilon$ for each algorithm (e.g. how
+sensitive was each algorithm to $\epsilon$)? Why do you think this occurred?
+Does this coincide with what you learned in lectures about each algorithm?} \\
+\noindent
+xxx
+\\
+\textbf{2.What was the final policy and Q-values that you typically obtain (typically, as in the
+majority of the trials)? Are they similar or different across algorithms for each value
+of ε? Does this correspond to an optimal policy (you may refer to your answers for
+project 1)? Please comment on the variability of each algorithm in terms of what
+you learned about the algorithms (e.g. bias/variance trade-off).}
+\\
+\noindent
+xxx
+\\
+\textbf{3.Which algorithm was most difficult, and which was most easy, to
+implement and why? Which took the least time (and samples) to train, and which
+the most? Which algorithm(s) do you think would scale better to larger problems
+and why?} \\
+\noindent
+xxx
+\\
+
+% APPENDIX-------------------------------------
+\newpage
+\section{Appendix}
+
+% \begin{figure}[h]
+% \includegraphics[scale=0.5]{transition_matrix}
+% \centering
+% \caption{Transition Matrix}
+% \end{figure}
+
+\end{document}
