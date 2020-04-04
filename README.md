@@ -26,6 +26,7 @@
 
 ## Google Doc
 
+https://docs.google.com/document/d/1wH0MMmWxwtwxJUbOZJNHRqR4wu-POpnWi7XHRaTSybQ/edit
 
 ## Questions
 
