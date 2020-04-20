@@ -96,6 +96,7 @@ def equilibrium(G_state):
     Aub = np.concatenate((invader_q,w_coeff),1)
     invader_solution = linprog(c, A_ub=Aub, b_ub=b, A_eq=Aeq, b_eq=beq, bounds=bounds, method='revised simplex')
     
+    # in the case that linprog fails, fill the policy with even distribution
     if defender_solution['status'] == 0:
         defender_policy = defender_solution['x'][:4]
     else:
@@ -107,7 +108,6 @@ def equilibrium(G_state):
         invader_policy = np.array([0.25,0.25,0.25,0.25])
 
     return defender_policy, invader_policy
-
 
 
 # SHAPLEYS VALUE ITERATION---------------------------------------------------
@@ -142,7 +142,6 @@ def shapley_value_iteration(tolerance, gamma):
     # to start the loop
     delta = tolerance + 1
     k = 0
-
     last_delta = 1000
 
     # START THE VALUE ITERATION ALGORITHM
@@ -166,14 +165,12 @@ def shapley_value_iteration(tolerance, gamma):
             # calculate delta
             delta = max(delta, abs(U[k+1][state]-U[k][state]))
             
-        # print k and current max delta
-        # clear_output(wait=True)
         print('k: ' + str(k) + ' delta: ' + str(delta))
         
         delta_list.append(delta)
         k += 1
         
-        # stop training when delta explodes
+        # stop training if delta explodes
         if delta > last_delta:
             break
         

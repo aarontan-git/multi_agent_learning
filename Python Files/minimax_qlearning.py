@@ -102,6 +102,7 @@ def equilibrium(G_state):
     Aub = np.concatenate((invader_q,w_coeff),1)
     invader_solution = linprog(c, A_ub=Aub, b_ub=b, A_eq=Aeq, b_eq=beq, bounds=bounds, method='revised simplex')
     
+    # in the case that linprog fails, fill the policy with even distribution
     if defender_solution['status'] == 0:
         defender_policy = defender_solution['x'][:4]
     else:
@@ -125,13 +126,11 @@ def choose_action(defender_policy, invader_policy, epsilon):
     action_type = int(np.random.choice(2, 1, p=[epsilon,1-epsilon]))
     
     if action_type == 0:
-        
         # randomly pick an action
         defender_action_index = random.choice(range(4))    
         invader_action_index = random.choice(range(4))    
     
     else:
-
         # pick best action based on sampling
         defender_action_index = int(np.random.choice(action_count, 1, p=defender_policy.clip(0)))
         invader_action_index = int(np.random.choice(action_count, 1, p=invader_policy.clip(0)))
@@ -185,9 +184,7 @@ def generate_trajectory(Defender_state, Invader_state, invader_defender, defende
     return game_trajectory, status, cumulated_reward, game_step
 
 
-
-
-# ALGORITHM-------------------------------------------------------------------------------
+# MINIMAX Q LEANRING ALGORITHM-------------------------------------------------------------------------------
 
 def minimax_qlearning(T, lr, gamma, epsilon, episodes):
 
@@ -197,10 +194,6 @@ def minimax_qlearning(T, lr, gamma, epsilon, episodes):
 
     # initialize params
     t = 0
-    # T = 200
-    # lr = 0.9
-    # gamma = 0.95
-    # epsilon = 0.99
 
     # initialize Q matrix
     state_action_pair_list = []
@@ -245,11 +238,10 @@ def minimax_qlearning(T, lr, gamma, epsilon, episodes):
     # choose a policy by solving the current game
     defender_policy[current_state], invader_policy[current_state] = equilibrium(G[current_state])
 
-    # initialize a dictionary for G values = {(x1, y1, x2, y2): payoff_matrix}
+    # intialize a dictionary to keep track of the number of visits to a state
     listofzeros = [0.0] * len(state_action_pair_list)
     state_count = dict(zip(state_action_pair_list, listofzeros))
 
-    # episodes = 10000
     eps = 0
     delta_list = []
 
@@ -265,9 +257,7 @@ def minimax_qlearning(T, lr, gamma, epsilon, episodes):
     for eps in range(episodes):
         t = 0
         delta = 0
-        
         training_reward = 0
-        
         while t < T:
             
             # choose a joint based on epsilon greedy (joint_action = [a1_indx, a2_indx])
@@ -277,7 +267,6 @@ def minimax_qlearning(T, lr, gamma, epsilon, episodes):
             # decaying learning rate
             state_count[current_state_action_pair] += 1
             lr_ = lr / state_count[current_state_action_pair]
-    #         lr_ = lr    
         
             # get next state and reward based on current state [x1,y1,x2,y2] and joint action [a1_indx, a2_indx]
             next_state, reward = invader_defender.next_state(current_state, actions[joint_action[0]], actions[joint_action[1]])
@@ -297,7 +286,7 @@ def minimax_qlearning(T, lr, gamma, epsilon, episodes):
             value = calculate_value(G[next_state])
             Q[current_state_action_pair] = Q[current_state_action_pair] + lr_*(reward + gamma*value - Q[current_state_action_pair])
         
-            # if game reached terminal state, restart new episode
+            # if game reached terminal state, restart new episode with a fixed initial state
             terminal, status = invader_defender.terminal_check(list(next_state))
             if terminal:
                 training_steps = t
